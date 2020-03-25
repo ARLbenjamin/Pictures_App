@@ -1,46 +1,49 @@
 const { Router } = require('express');
 const router = Router();
-const path = require('path');
-const { unlink } = require('fs-extra');
+const Photo = require('../models/Photo');
+const cloudinary = require('cloudinary');
 
-const Image = require('../models/Image');
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+const fs = require('fs-extra');
 
 router.get('/', async (req, res) => {
-  const images = await Image.find();
-  res.render('index', {images});
+    const photos = await Photo.find();
+    console.log(photos);
+    res.render('images', {photos: photos});
 });
 
-router.get('/upload', (req, res) => {
-    res.render('upload');
+router.get('/images/add', async (req, res) => {
+    const photos = await Photo.find();
+     res.render('image_form', {photos: photos});
 });
 
-router.post('/upload', async (req, res) => {
-    const image = new Image();
-    image.title = req.body.title;
-    image.description = req.body.description;
-    image.filename = req.file.filename;
-    image.path = '/img/uploads/' + req.file.filename;
-    image.originalname = req.file.originalname;
-    image.minetype = req.file.mimetype;
-    image.size = req.file.size;
-    
-    await image.save();
-
-    res.redirect('/');
+router.post('/images/add', async (req,res) =>{
+    console.log(req.body);
+    const { title, description } = req.body;
+    console.log(req.file);
+    const result = await cloudinary.v2.uploader.upload(req.file.path);
+    const newPhoto = new Photo({
+      title: title,
+      description: description,
+      imageURL: result.url,
+      public_id: result.public_id
+    });
+    await newPhoto.save();
+    await fs.unlink(req.file.path)
+    res.redirect('/images/add');
 });
 
-router.get('/image/:id', async(req, res) => {
-    const { id } = req.params;
-    const image = await Image.findById(id);
-    res.render('profiles', { image });
-})
+router.get('/images/delete/:photo_id', async (req, res) => {
+  const { photo_id } = req.params;
+  const photo = await Photo.findByIdAndDelete(photo_id);
+  const result = cloudinary.v2.uploader.destroy(photo.public_id);
+  console.log(result);
+  res.redirect('/images/add');
+});
 
-router.get('/image/:id/delete', async (req, res) => {
-    const { id } = req.params;
-    const image  = await Image.findByIdAndDelete(id)
-    await unlink(path.resolve('./src/public' + image.path));
-    res.redirect('/')
-})
-
-module.exports = router;
-
+module.exports =  router;

@@ -1,0 +1,12 @@
+
+ -> express: para codigo del servidor
+ -> express-handlebars: motor de platilla para express
+ -> morgan: para hacer seguimiento por consola a las peticiones q van llegando al servidor
+ -> multer: para poder subir las imagenes de la base de datos al servidor
+ -> mongoose: para modelar y conectarse a la base de datos cuando de usa mongodb
+ -> cloudinary:para conectar con la base de datos cloudinary
+ -> nodemon: 
+ -> dotenv: para leer los archivos .env (donde se crean las variables de entorno)
+  * comando: prosses.env."nombre de la variable de entorno" --> este comando te permite usar la variable de entorno
+
+ -> cross-env: permite definir el entorno de desarrollo 

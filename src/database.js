@@ -1,5 +1,8 @@
 const mongoose = require('mongoose');
 
-mongoose.connect('mongodb://localhost/it_is_not_pinteres', {
-    useNewUrlParser: true
-}).then(db => console.log('DB is connected')). catch(err => console.log(err));
+
+mongoose.connect(process.env.MONGODB_URI, {
+      useNewUrlParser: true
+}).then(db => console.log('DB is conected')).catch(err => console.error(err));
+
+module.exports = mongoose;
